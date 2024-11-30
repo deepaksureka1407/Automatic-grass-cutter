@@ -1,0 +1,100 @@
+// Define pins for motor driver
+#define ENA 9     // Enable motor A
+#define IN1 6     // Motor A forward
+#define IN2 7     // Motor A reverse
+#define ENB 10    // Enable motor B
+#define IN3 8     // Motor B forward
+#define IN4 11    // Motor B reverse
+
+// Define pins for ultrasonic sensor
+#define trigPin 12
+#define echoPin 13
+
+long duration;
+int distance;
+
+void setup() {
+  // Initialize motor control pins
+  pinMode(ENA, OUTPUT);
+  pinMode(IN1, OUTPUT);
+  pinMode(IN2, OUTPUT);
+  pinMode(ENB, OUTPUT);
+  pinMode(IN3, OUTPUT);
+  pinMode(IN4, OUTPUT);
+
+  // Initialize ultrasonic sensor pins
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+  
+  Serial.begin(9600); // Start the serial monitor
+}
+
+void loop() {
+  // Trigger the ultrasonic sensor
+  digitalWrite(trigPin, LOW);  
+  delayMicroseconds(2);  
+  digitalWrite(trigPin, HIGH);  
+  delayMicroseconds(10);  
+  digitalWrite(trigPin, LOW);  
+
+  duration = pulseIn(echoPin, HIGH); // Measure the duration of the pulse
+  distance = duration * 0.034 / 2;  // Calculate the distance
+
+  Serial.print("Distance: ");
+  Serial.println(distance); // Print distance to the serial monitor
+
+  // Check if the distance is less than a threshold (e.g., 15 cm)
+  if (distance < 15) {
+    // Obstacle detected, reverse or stop
+    stopMotors();
+    delay(1000); // Pause for a second
+    moveBackward(); // Move backward
+    delay(1000); // Move backward for 1 second
+    turnRight(); // Turn right after moving backward
+    delay(500); // Turn for half a second
+  } else {
+    // No obstacle, continue forward
+    moveForward();
+  }
+}
+
+// Function to move the grass cutter forward
+void moveForward() {
+  digitalWrite(IN1, HIGH);
+  digitalWrite(IN2, LOW);
+  digitalWrite(IN3, HIGH);
+  digitalWrite(IN4, LOW);
+  analogWrite(ENA, 255);  // Full speed for motor A
+  analogWrite(ENB, 255);  // Full speed for motor B
+}
+
+// Function to move the grass cutter backward
+void moveBackward() {
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, HIGH);
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, HIGH);
+  analogWrite(ENA, 255);  // Full speed for motor A
+  analogWrite(ENB, 255);  // Full speed for motor B
+}
+
+// Function to stop the motors
+void stopMotors() {
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, LOW);
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, LOW);
+  analogWrite(ENA, 0);  // Stop motor A
+  analogWrite(ENB, 0);  // Stop motor B
+}
+
+// Function to turn the grass cutter to the right
+void turnRight() {
+  digitalWrite(IN1, HIGH);
+  digitalWrite(IN2, LOW);
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, HIGH);
+  analogWrite(ENA, 255);  // Full speed for motor A
+  analogWrite(ENB, 255);  // Full speed for motor B
+}
+
